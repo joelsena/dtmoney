@@ -6,17 +6,17 @@ import {
     TransactionTypeContainer,
     TransactionTypeRadioButton
 } from './styles'
+import { useTransaction } from '../../hooks/useTransactions'
 import closeImg from '../../assets/close.svg'
 import incomeImg from '../../assets/income.svg'
 import outcomeImg from '../../assets/outcome.svg'
-import { api } from '../../services/api'
 
 interface NewTransactionModalProps {
     isOpen: boolean
     onClose(): void
 }
 
-type transactionType = 'deposit' | 'withdraw'
+type TransactionType = 'deposit' | 'withdraw'
 
 export function NewTransactionModal({
     isOpen,
@@ -25,23 +25,25 @@ export function NewTransactionModal({
     const [title, setTitle] = useState('')
     const [value, setValue] = useState(0)
     const [category, setCategory] = useState('')
-    const [type, setType] = useState<transactionType>('deposit')
+    const [type, setType] = useState<TransactionType>('deposit')
 
-    function handleCreateNewTransaction(ev: FormEvent<HTMLFormElement>) {
+    const { createTransaction } = useTransaction()
+
+    async function handleCreateNewTransaction(ev: FormEvent<HTMLFormElement>) {
         ev.preventDefault()
 
-        const data = {
+        await createTransaction({
             title,
-            value,
-            type,
-            category
-        }
+            amount: value,
+            category,
+            type
+        })
 
-        try {
-            api.post('/transactions', data)
-        } catch (error) {
-            console.error(error)
-        }
+        setTitle('')
+        setValue(0)
+        setCategory('')
+        setType('deposit')
+        onClose()
         // Apagar campos
     }
 
